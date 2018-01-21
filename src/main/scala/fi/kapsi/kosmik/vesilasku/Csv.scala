@@ -33,5 +33,21 @@ object Csv {
 
 class MissingColumnException(val colName: String) extends Exception
 
-class Csv(val header: List[String], val rows: List[List[String]]) {
+class Row(private val header: List[String], private val rawRow: List[String]) {
+  def col(name: String): String = {
+    val index = header.indexOf(name)
+    if (index < 0) {
+      throw new IllegalArgumentException(f"no such column exists: $name")
+    }
+
+    rawRow(index)
+  }
+}
+
+class Csv(val header: List[String], val rawRows: List[List[String]]) {
+  def rows(): Stream[Row] = rowsStream(header, rawRows)
+
+  private def rowsStream(header: List[String], rows: List[List[String]]): scala.Stream[Row] =
+    if (rows.isEmpty) Stream.empty
+    else new Row(header, rows.head) #:: rowsStream(header, rows.tail)
 }

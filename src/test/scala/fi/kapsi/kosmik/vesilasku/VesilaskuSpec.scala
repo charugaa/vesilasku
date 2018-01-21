@@ -18,9 +18,25 @@ class VesilaskuSpec extends FlatSpec with Matchers {
     val csv = Csv.fromFile(getClass.getResource("data-sample.csv").getPath, colNames, '\t')
 
     csv.header shouldEqual colNames
-    csv.rows shouldEqual List(
+    csv.rawRows shouldEqual List(
       List("v11", "v12", "v13"),
       List("v21", "v22", "v23")
     )
+  }
+
+  it should "parse csv into Rows with column access by name" in {
+    val colNames = List("Col1", "Col3")
+
+    val csv = Csv.fromFile(getClass.getResource("data-sample.csv").getPath, colNames, '\t')
+    val rows = csv.rows()
+
+    val row1 = rows.head
+    row1.col("Col1") shouldEqual "v11"
+    row1.col("Col2") shouldEqual "v12"
+
+    val row2 = rows.tail.head
+    row2.col("Col3") shouldEqual "v23"
+
+    rows.tail.tail shouldEqual Nil
   }
 }
