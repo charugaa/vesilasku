@@ -2,7 +2,7 @@ package fi.kapsi.kosmik.vesilasku
 
 import org.scalatest.{FlatSpec, Matchers}
 
-class VesilaskuSpec extends FlatSpec with Matchers {
+class CsvSpec extends FlatSpec with Matchers {
   behavior of "The Csv object"
 
   it should "fail if required col names are missing" in {
