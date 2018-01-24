@@ -28,10 +28,10 @@ object Csv {
     })
   }
 
-  private def splitRow(row: String, separator: Char): List[String] = row.split(separator).toList
+  private def splitRow(row: String, separator: Char): List[String] = row.split(separator).map(_.trim).toList
 }
 
-class MissingColumnException(val colName: String) extends Exception
+class MissingColumnException(val colName: String) extends Exception(s"Missing column: $colName")
 
 class Row(private val header: List[String], private val rawRow: List[String]) {
   def col(name: String): String = {
