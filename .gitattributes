@@ -1,0 +1,5 @@
+# Set the default behavior, in case people don't have core.autocrlf set.
+* text=auto
+
+# rlv (csv) files produced by Sontex use crlf
+*.rlv text eol=crlf
