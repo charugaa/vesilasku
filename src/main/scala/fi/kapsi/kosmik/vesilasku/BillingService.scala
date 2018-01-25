@@ -1,21 +1,18 @@
 package fi.kapsi.kosmik.vesilasku
 
 object BillingService {
-  def monthlyReadings(apartment: Apartment, csv: Csv, months: Int): MonthlyReadings = {
+  def monthlyReadings(apartment: Apartment, csv: MeterData, months: Int): MonthlyReadings = {
     val endOfMonthReadings = csv.rows()
       .map(row => {
-        val rowMeter = row.col("Identification number")
+        val rowMeter = row.identificationNumber()
         apartment.meters.find((meter) => meter.radioId == rowMeter)
           .map(meter => (meter, row))
       })
       .filter(mr => mr.isDefined)
       .map(mr => mr.get)
       .map({ case (meter, row) =>
-        val values = (-1 to -(months + 1) by -1)
-          .map(monthIndex => s"Monthly volume $monthIndex")
-          .map(monthCol => row.col(monthCol.toString))
-          .map(doubleWithComma => doubleWithComma.replaceAll(",", ".")) // TODO: less hackish number format handling
-          .map(_.toDouble)
+        val values = (1 to months + 1)
+          .map(monthsFromNow => row.monthlyVolume(monthsFromNow))
           .toList
         (meter, values)
       })

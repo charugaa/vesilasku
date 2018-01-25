@@ -12,7 +12,7 @@ class BillingServiceSpec extends FlatSpec with Matchers {
     val coldMeter = Meter(MeterType.Cold, "1002")
     val apartment = new Apartment("42", List(hotMeter, coldMeter))
 
-    val csv = MeterCsv.fromFile(getClass.getResource("DevicesValues646_2001_2017-07-01-581.rlv").getPath)
+    val csv = MeterData.fromFile(getClass.getResource("DevicesValues646_2001_2017-07-01-581.rlv").getPath)
 
     val readings = BillingService.monthlyReadings(apartment, csv, 6)
 
