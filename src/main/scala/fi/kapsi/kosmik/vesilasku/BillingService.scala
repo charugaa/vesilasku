@@ -44,24 +44,9 @@ object Reading {
 
 class Reading(val endOfMonth: Double, val consumption: Double) {
   override def toString = s"Reading($endOfMonth, $consumption)"
-
-  def canEqual(other: Any): Boolean = other.isInstanceOf[Reading]
-
-  override def equals(other: Any): Boolean = other match {
-    case that: Reading =>
-      (that canEqual this) &&
-        endOfMonth == that.endOfMonth &&
-        consumption == that.consumption
-    case _ => false
-  }
-
-  override def hashCode(): Int = {
-    val state = Seq(endOfMonth, consumption)
-    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
-  }
 }
 
 /**
-  * @param values a list of monthly Readings, newest first
+  * @param meters a list of monthly Readings, newest first
   */
-class MonthlyReadings(val values: Map[Meter, List[Reading]])
+class MonthlyReadings(val meters: Map[Meter, List[Reading]])

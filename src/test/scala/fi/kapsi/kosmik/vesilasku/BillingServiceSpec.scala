@@ -3,6 +3,8 @@ package fi.kapsi.kosmik.vesilasku
 import org.scalatest.{FlatSpec, Matchers}
 
 class BillingServiceSpec extends FlatSpec with Matchers {
+  val readingTolerance = 0.001
+
   behavior of "The BillingService object"
 
   it should "calculate monthly readings" in {
@@ -14,23 +16,39 @@ class BillingServiceSpec extends FlatSpec with Matchers {
 
     val readings = BillingService.monthlyReadings(apartment, csv, 6)
 
-    // TODO: make this assertion nicer to read
-    // TODO: probably replace Reading.equals with a custom assertion
-    readings.values shouldEqual Map(
+    val expectedMeters = Map(
       hotMeter -> List(
-        Reading(74.371, 0.6389999999999958),
-        Reading(73.732, 0.703000000000003),
-        Reading(73.029, 0.7539999999999907),
-        Reading(72.275, 0.5960000000000036),
-        Reading(71.679, 0.6099999999999994),
-        Reading(71.069, 0.9620000000000033)),
+        Reading(74.371, 0.639),
+        Reading(73.732, 0.703),
+        Reading(73.029, 0.754),
+        Reading(72.275, 0.596),
+        Reading(71.679, 0.610),
+        Reading(71.069, 0.962)),
       coldMeter -> List(
-        Reading(83.564, 0.8089999999999975),
-        Reading(82.755, 1.3960000000000008),
-        Reading(81.359, 1.6149999999999949),
-        Reading(79.744, 1.813999999999993),
-        Reading(77.93, 1.0130000000000052),
-        Reading(76.917, 0.7049999999999983))
+        Reading(83.564, 0.809),
+        Reading(82.755, 1.396),
+        Reading(81.359, 1.615),
+        Reading(79.744, 1.814),
+        Reading(77.93, 1.013),
+        Reading(76.917, 0.705))
     )
+
+    assertMeterReadingsMatch(readings.meters, expectedMeters)
   }
+
+  def assertMeterReadingsMatch(actual: Map[Meter, List[Reading]], expected: Map[Meter, List[Reading]]): Unit = {
+    def assertReadingsMatch(actual: List[Reading], expected: List[Reading]): Unit = {
+      actual.length shouldEqual expected.length
+      actual.zip(expected).foreach({ case (actualReading, expectedReading) =>
+        actualReading.endOfMonth shouldEqual expectedReading.endOfMonth +- readingTolerance
+        actualReading.consumption shouldEqual expectedReading.consumption +- readingTolerance
+      })
+    }
+
+    actual.keySet shouldEqual expected.keySet
+    expected.keySet.foreach(meter => {
+      assertReadingsMatch(actual(meter), expected(meter))
+    })
+  }
+
 }
