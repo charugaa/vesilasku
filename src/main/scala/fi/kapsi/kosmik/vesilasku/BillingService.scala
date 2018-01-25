@@ -10,26 +10,22 @@ object BillingService {
       })
       .filter(mr => mr.isDefined)
       .map(mr => mr.get)
-      .map({
-        case (meter, row) => {
-          val values = (-1 to -(months + 1) by -1)
-            .map(monthIndex => s"Monthly volume $monthIndex")
-            .map(monthCol => row.col(monthCol.toString))
-            .map(doubleWithComma => doubleWithComma.replaceAll(",", ".")) // TODO: less hackish number format handling
-            .map(_.toDouble)
-            .toList
-          (meter, values)
-        }
+      .map({ case (meter, row) =>
+        val values = (-1 to -(months + 1) by -1)
+          .map(monthIndex => s"Monthly volume $monthIndex")
+          .map(monthCol => row.col(monthCol.toString))
+          .map(doubleWithComma => doubleWithComma.replaceAll(",", ".")) // TODO: less hackish number format handling
+          .map(_.toDouble)
+          .toList
+        (meter, values)
       })
       .toMap
 
     val values = endOfMonthReadings
-      .map({
-        case (meter, endOfMonthValues) => {
-          meter -> endOfMonthValues.zip(endOfMonthValues.tail).map({
-            case (month, lastMonth) => new Reading(month, month - lastMonth)
-          })
-        }
+      .map({ case (meter, endOfMonthValues) =>
+        meter -> endOfMonthValues.zip(endOfMonthValues.tail).map({
+          case (month, lastMonth) => new Reading(month, month - lastMonth)
+        })
       })
 
     new MonthlyReadings(values)
