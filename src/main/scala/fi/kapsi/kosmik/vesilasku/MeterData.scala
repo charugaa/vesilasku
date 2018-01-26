@@ -3,7 +3,7 @@ package fi.kapsi.kosmik.vesilasku
 import fi.kapsi.kosmik.vesilasku.csv.{Csv, Row => CsvRow, fromFile => fromCsvFile}
 
 object MeterData {
-  val colNames: List[String] = List(Colums.identificationNumber) ++ (1 to 15).map(i => Colums.monthlyVolume(i)).toList
+  val colNames: List[String] = List(Columns.identificationNumber) ++ (1 to 15).map(i => Columns.monthlyVolume(i)).toList
 
   def fromFile(path: String): MeterData = new MeterData(fromCsvFile(path, colNames, '\t'))
 }
@@ -11,16 +11,16 @@ object MeterData {
 class MeterData(private val csv: Csv) {
 
   class Row(private val csvRow: CsvRow) {
-    def identificationNumber(): String = csvRow.col(Colums.identificationNumber)
+    def identificationNumber(): String = csvRow.col(Columns.identificationNumber)
 
     def monthlyVolume(monthsFromNow: Int): Double =
-      csvRow.col(Colums.monthlyVolume(monthsFromNow)).replace(",", ".").toDouble
+      csvRow.col(Columns.monthlyVolume(monthsFromNow)).replace(",", ".").toDouble
   }
 
   def rows(): Stream[Row] = csv.rows().map(csvRow => new Row(csvRow))
 }
 
-private object Colums {
+private object Columns {
   val monthRange: Int = 15
 
   val identificationNumber = "Identification number"
