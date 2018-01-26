@@ -1,11 +1,11 @@
 package fi.kapsi.kosmik.vesilasku
 
-import fi.kapsi.kosmik.vesilasku.{Row => CsvRow}
+import fi.kapsi.kosmik.vesilasku.csv.{Csv, Row => CsvRow, fromFile => fromCsvFile}
 
 object MeterData {
   val colNames: List[String] = List(Colums.identificationNumber) ++ (1 to 15).map(i => Colums.monthlyVolume(i)).toList
 
-  def fromFile(path: String): MeterData = new MeterData(Csv.fromFile(path, colNames, '\t'))
+  def fromFile(path: String): MeterData = new MeterData(fromCsvFile(path, colNames, '\t'))
 }
 
 class MeterData(private val csv: Csv) {

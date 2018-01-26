@@ -1,4 +1,4 @@
-package fi.kapsi.kosmik.vesilasku
+package fi.kapsi.kosmik.vesilasku.csv
 
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -8,14 +8,14 @@ class CsvSpec extends FlatSpec with Matchers {
   it should "fail if required col names are missing" in {
     val colNames = List("Col1", "Col4")
     assertThrows[MissingColumnException] {
-      Csv.fromFile(getClass.getResource("data-sample.csv").getPath, colNames, '\t')
+      fromFile(getClass.getResource("data-sample.csv").getPath, colNames, '\t')
     }
   }
 
   it should "read csv from file" in {
     val colNames = List("Col1", "Col2", "Col3")
 
-    val csv = Csv.fromFile(getClass.getResource("data-sample.csv").getPath, colNames, '\t')
+    val csv = fromFile(getClass.getResource("data-sample.csv").getPath, colNames, '\t')
 
     csv.header shouldEqual colNames
     csv.rawRows shouldEqual List(
@@ -27,7 +27,7 @@ class CsvSpec extends FlatSpec with Matchers {
   it should "parse csv into Rows with column access by name" in {
     val colNames = List("Col1", "Col3")
 
-    val csv = Csv.fromFile(getClass.getResource("data-sample.csv").getPath, colNames, '\t')
+    val csv = fromFile(getClass.getResource("data-sample.csv").getPath, colNames, '\t')
     val rows = csv.rows()
 
     val row1 = rows.head
