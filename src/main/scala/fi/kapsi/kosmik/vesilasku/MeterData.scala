@@ -3,16 +3,10 @@ package fi.kapsi.kosmik.vesilasku
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
+import fi.kapsi.kosmik.vesilasku.MeterData.Row
 import fi.kapsi.kosmik.vesilasku.csv.{Csv, Row => CsvRow, fromFile => fromCsvFile}
 
 object MeterData {
-  val colNames: List[String] = List(Columns.identificationNumber, Columns.readoutDate) ++
-    (1 to 15).map(i => Columns.monthlyVolume(i)).toList
-
-  def fromFile(path: String): MeterData = new MeterData(fromCsvFile(path, colNames, '\t'))
-}
-
-class MeterData(private val csv: Csv) {
 
   class Row(private val csvRow: CsvRow) {
     def identificationNumber(): String = csvRow.col(Columns.identificationNumber)
@@ -23,6 +17,13 @@ class MeterData(private val csv: Csv) {
     def readoutDate(): LocalDate = Parser.parseDate(csvRow.col(Columns.readoutDate))
   }
 
+  val colNames: List[String] = List(Columns.identificationNumber, Columns.readoutDate) ++
+    (1 to 15).map(i => Columns.monthlyVolume(i)).toList
+
+  def fromFile(path: String): MeterData = new MeterData(fromCsvFile(path, colNames, '\t'))
+}
+
+class MeterData(private val csv: Csv) {
   def rows(): Stream[Row] = csv.rows().map(csvRow => new Row(csvRow))
 }
 
