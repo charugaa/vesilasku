@@ -5,6 +5,13 @@ import org.scalatest.{FlatSpec, Matchers}
 class CsvSpec extends FlatSpec with Matchers {
   behavior of "The Csv object"
 
+  it should "fail if file does not exist" in {
+    val colNames = List()
+    assertThrows[IllegalArgumentException] {
+      fromFile("/unknown/location/file.csv", colNames, '\t')
+    }
+  }
+
   it should "fail if required col names are missing" in {
     val colNames = List("Col1", "Col4")
     assertThrows[MissingColumnException] {

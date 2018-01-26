@@ -1,5 +1,7 @@
 package fi.kapsi.kosmik.vesilasku
 
+import java.io.File
+
 import scala.io.Source
 
 package object csv {
@@ -7,7 +9,12 @@ package object csv {
   import Csv.{assertColNames, splitRow}
 
   def fromFile(path: String, requiredColNames: List[String], separator: Char): Csv = {
-    val rawRows = Source.fromFile(path).getLines().toList
+    val file = new File(path)
+    if (!(file.exists() && file.canRead)) {
+      throw new IllegalArgumentException(s"can not read file $path")
+    }
+
+    val rawRows = Source.fromFile(file).getLines().toList
 
     val header = splitRow(rawRows.head, separator)
     assertColNames(requiredColNames, header)
