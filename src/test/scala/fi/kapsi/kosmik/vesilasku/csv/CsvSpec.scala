@@ -46,4 +46,28 @@ class CsvSpec extends FlatSpec with Matchers {
 
     rows.tail.tail shouldEqual Nil
   }
+
+  it should "output csv file" in {
+    val producer = new CsvProducer {
+      override def rows(): Stream[List[String]] = List(
+        List("43", "1.7.2017", "52,543"),
+        List("18", "31.7.2017", "0,523"),
+      ).toStream
+
+      override def header(): List[String] = List("id", "date", "value")
+    }
+
+    val csv = toCsv(producer)
+    csv shouldEqual testFile("expected-output.csv")
+  }
+
+  private def testFile(resourceName: String): String = {
+    val resourceStream = getClass.getResourceAsStream(resourceName)
+    if (resourceStream == null) {
+      throw new IllegalArgumentException(s"resource $resourceName not found")
+    }
+    scala.io.Source.fromInputStream(resourceStream)
+      .getLines().mkString("\n")
+  }
+
 }

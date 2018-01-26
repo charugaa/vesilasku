@@ -30,6 +30,21 @@ package object csv {
     new Csv(header, rows)
   }
 
+  def toCsv(producer: CsvProducer, separator: Char = ';', newline: String = "\n"): String = {
+    val colCount = producer.header().length
+
+    (producer.header() #:: producer.rows())
+      .map(dataRow => {
+        if (dataRow.length != colCount) {
+          throw new IllegalArgumentException(s"expected all rows to have $colCount columns " +
+            s"but found one with ${dataRow.length} columns")
+        }
+        dataRow
+      })
+      .map(dataRow => dataRow.mkString(separator.toString))
+      .mkString(newline)
+  }
+
   class MissingColumnException(val colName: String) extends Exception(s"Missing column: $colName")
 
   class Row(private val header: List[String], private val rawRow: List[String]) {
