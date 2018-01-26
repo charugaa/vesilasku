@@ -33,7 +33,7 @@ package object csv {
   def toCsv(producer: CsvProducer, separator: Char = ';', newline: String = "\n"): String = {
     val colCount = producer.header().length
 
-    (producer.header() #:: producer.rows())
+    (List(producer.header()) ++ producer.rows())
       .map(dataRow => {
         if (dataRow.length != colCount) {
           throw new IllegalArgumentException(s"expected all rows to have $colCount columns " +

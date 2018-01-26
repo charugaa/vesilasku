@@ -6,6 +6,10 @@ package object model {
 
 }
 
+object Apartment {
+  def apply(label: String, meters: List[Meter]): Apartment = new Apartment(label, meters)
+}
+
 class Apartment(val label: String, val meters: List[Meter])
 
 object MeterType extends Enumeration {
@@ -16,11 +20,15 @@ object MeterType extends Enumeration {
 
 object Meter {
   def apply(meterType: MeterType, radioId: String): Meter = {
-    new Meter(meterType, radioId)
+    new Meter(s"$radioId-$meterType", meterType, radioId)
+  }
+
+  def apply(label: String, meterType: MeterType, radioId: String): Meter = {
+    new Meter(label, meterType, radioId)
   }
 }
 
-class Meter(val meterType: MeterType, val radioId: String) {
+class Meter(val label: String, val meterType: MeterType, val radioId: String) {
   override def toString = s"Meter($meterType, $radioId)"
 
   def canEqual(other: Any): Boolean = other.isInstanceOf[Meter]

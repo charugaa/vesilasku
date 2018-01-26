@@ -49,10 +49,10 @@ class CsvSpec extends FlatSpec with Matchers {
 
   it should "output csv file" in {
     val producer = new CsvProducer {
-      override def rows(): Stream[List[String]] = List(
+      override def rows(): List[List[String]] = List(
         List("43", "1.7.2017", "52,543"),
         List("18", "31.7.2017", "0,523"),
-      ).toStream
+      )
 
       override def header(): List[String] = List("id", "date", "value")
     }
