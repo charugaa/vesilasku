@@ -5,14 +5,15 @@ import java.time.format.DateTimeFormatter
 
 import fi.kapsi.kosmik.vesilasku.MeterData.Row
 import fi.kapsi.kosmik.vesilasku.csv.{Csv, Row => CsvRow, fromFile => fromCsvFile}
+import fi.kapsi.kosmik.vesilasku.model.EndOfMonthReading
 
 object MeterData {
 
   class Row(private val csvRow: CsvRow) {
     def identificationNumber(): String = csvRow.col(Columns.identificationNumber)
 
-    def monthlyVolume(monthsFromNow: Int): Double =
-      Parser.parseDouble(csvRow.col(Columns.monthlyVolume(monthsFromNow)))
+    def endOfMonthReading(monthsFromReadout: Int): EndOfMonthReading =
+      EndOfMonthReading(Parser.parseDouble(csvRow.col(Columns.monthlyVolume(monthsFromReadout))))
 
     def readoutDate(): LocalDate = Parser.parseDate(csvRow.col(Columns.readoutDate))
   }
@@ -44,11 +45,11 @@ private object Columns {
 
   def identificationNumber = "Identification number"
 
-  def monthlyVolume(monthsFromNow: Int): String = {
-    if (monthsFromNow > monthRange) {
-      throw new IllegalArgumentException(s"Month $monthsFromNow is out of range")
+  def monthlyVolume(monthsFromReadout: Int): String = {
+    if (monthsFromReadout > monthRange) {
+      throw new IllegalArgumentException(s"Month $monthsFromReadout is out of range")
     }
-    s"Monthly volume ${-monthsFromNow}"
+    s"Monthly volume ${-monthsFromReadout}"
   }
 
   def readoutDate = "Readout date"

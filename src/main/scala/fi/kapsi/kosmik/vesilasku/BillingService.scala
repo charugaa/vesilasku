@@ -6,20 +6,21 @@ import java.time.{LocalDate, YearMonth}
 import fi.kapsi.kosmik.vesilasku.MeterData.Row
 import fi.kapsi.kosmik.vesilasku.csv.CsvProducer
 import fi.kapsi.kosmik.vesilasku.model.MeterType.MeterType
-import fi.kapsi.kosmik.vesilasku.model.{Apartment, Meter, MeterType}
+import fi.kapsi.kosmik.vesilasku.model._
 
 import scala.annotation.tailrec
 
 object BillingService {
-  def monthlyReadings(apartment: Apartment, csv: MeterData, fromMonth: YearMonth, months: Int): MonthlyReadings = {
+  def monthlyReadings(apartment: Apartment, csv: MeterData, fromMonth: YearMonth, months: MonthCount):
+  MonthlyReadings = {
     new MonthlyReadings(
       endOfMonthReadings(apartment, csv.rows(), fromMonth, months)
-        .map(calculateReadings)
+        .map(calculateConsumptions)
     )
   }
 
   def report(apartments: List[Apartment], csv: MeterData, fromMonth: YearMonth,
-             months: Int, kWhPerM3: Double): Report = {
+             months: MonthCount, heatingEnergy: WaterHeatingEnergy): Report = {
     val apartmentsMonthlyReadings = apartments
       .map(ap => (ap, monthlyReadings(ap, csv, fromMonth, months).meters))
 
@@ -33,26 +34,26 @@ object BillingService {
         totals.zip(consumptions).map({ case (t, c) => t + c })
       })
 
-    val powerConsumptions = allMeterReadings
+    val energyConsumptions = allMeterReadings
       .filter({ case (meter, _) => meter.meterType == MeterType.Hot })
       .map(meterReadings => meterReadings._2)
       .map(readings => readings.map(reading => reading.consumption))
       .reduce((totals, consumptions) => {
         totals.zip(consumptions).map({ case (t, c) => t + c })
       })
-      .map(t => t * kWhPerM3)
+      .map(t => heatingEnergy.energyConsumption(t))
 
-    new Report(fromMonth, months, apartmentsMonthlyReadings.toMap, totalConsumptions, powerConsumptions)
+    new Report(fromMonth, months, apartmentsMonthlyReadings.toMap, totalConsumptions, energyConsumptions)
   }
 
-  private def calculateReadings(me: (Meter, List[Double])) = me match {
+  private def calculateConsumptions(me: (Meter, List[EndOfMonthReading])) = me match {
     case (meter, endOfMonthValues) =>
       meter -> endOfMonthValues.zip(endOfMonthValues.tail).map({
-        case (month, lastMonth) => new Reading(month, month - lastMonth)
+        case (month, lastMonth) => Reading(month, Consumption(month.reading - lastMonth.reading))
       })
   }
 
-  private def endOfMonthReadings(apartment: Apartment, rows: Stream[Row], fromMonth: YearMonth, months: Int) = {
+  private def endOfMonthReadings(apartment: Apartment, rows: Stream[Row], fromMonth: YearMonth, months: MonthCount) = {
     rows
       .map(row => meterRows(row, apartment))
       .filter(mr => mr.isDefined)
@@ -61,11 +62,11 @@ object BillingService {
       .toMap
   }
 
-  private def meterEndOfMonthValues(meterRow: (Meter, Row), fromMonth: YearMonth, months: Int) = meterRow match {
+  private def meterEndOfMonthValues(meterRow: (Meter, Row), fromMonth: YearMonth, months: MonthCount) = meterRow match {
     case (meter, row) =>
       val monthOffset = readoutMonthOffset(fromMonth, meter, row.readoutDate())
-      val values = (monthOffset to months + monthOffset)
-        .map(monthsFromNow => row.monthlyVolume(monthsFromNow))
+      val values = (monthOffset to months.count + monthOffset)
+        .map(monthsFromNow => row.endOfMonthReading(monthsFromNow))
         .toList
       (meter, values)
   }
@@ -90,12 +91,12 @@ object BillingService {
 }
 
 object Reading {
-  def apply(endOfMonth: Double, consumption: Double): Reading = {
+  def apply(endOfMonth: EndOfMonthReading, consumption: Consumption): Reading = {
     new Reading(endOfMonth, consumption)
   }
 }
 
-class Reading(val endOfMonth: Double, val consumption: Double) {
+class Reading(val endOfMonth: EndOfMonthReading, val consumption: Consumption) {
   override def toString = s"Reading($endOfMonth, $consumption)"
 }
 
@@ -105,10 +106,10 @@ class Reading(val endOfMonth: Double, val consumption: Double) {
 class MonthlyReadings(val meters: Map[Meter, List[Reading]])
 
 class Report(private val fromMonth: YearMonth,
-             private val months: Int,
+             private val months: MonthCount,
              private val apartmentReports: Map[Apartment, Map[Meter, List[Reading]]],
-             private val totalConsumptions: List[Double],
-             private val powerConsumptions: List[Double]) {
+             private val totalConsumptions: List[Consumption],
+             private val energyConsumptions: List[KiloWh]) {
   def producer(): CsvProducer = new CsvProducer {
 
     override def rows(): List[List[String]] = {
@@ -127,7 +128,7 @@ class Report(private val fromMonth: YearMonth,
         }
       }
 
-      "Meter label" :: "Meter id" :: "Meter type" :: monthHeaders(Nil, fromMonth, months)
+      "Meter label" :: "Meter id" :: "Meter type" :: monthHeaders(Nil, fromMonth, months.count)
     }
 
     private def collectMeterReadings() = {
@@ -141,8 +142,8 @@ class Report(private val fromMonth: YearMonth,
     }
 
     private def formatSummaryRows(): List[List[String]] = {
-      val totalM3 = List[String]("total m^3", "", "") ++ totalConsumptions.reverse.map(tc => formatReading(tc))
-      val totalKWh = List[String]("total kWh", "", "") ++ powerConsumptions.reverse.map(tc => formatReading(tc))
+      val totalM3 = List[String]("total m^3", "", "") ++ totalConsumptions.reverse.map(tc => formatConsumption(tc))
+      val totalKWh = List[String]("total kWh", "", "") ++ energyConsumptions.reverse.map(ec => formatEnergy(ec))
       totalM3 :: totalKWh :: Nil
     }
 
@@ -157,7 +158,7 @@ class Report(private val fromMonth: YearMonth,
           val formattedRow = List(meter.label, meter.radioId, format(meter.meterType)) ++
             allMeterReadings(meter)
               .reverse
-              .map(r => formatReading(r.consumption))
+              .map(r => formatConsumption(r.consumption))
           rec(formattedRow :: acc, rem.tail)
         }
       }
@@ -166,7 +167,9 @@ class Report(private val fromMonth: YearMonth,
     }
   }
 
-  private def formatReading(consumption: Double): String = "%.3f".format(consumption).replaceAll("\\.", ",")
+  private def formatConsumption(value: Consumption): String = "%.3f".format(value.consumption).replaceAll("\\.", ",")
+
+  private def formatEnergy(value: KiloWh): String = "%.3f".format(value.value).replaceAll("\\.", ",")
 
   private def format(meterType: MeterType): String = meterType match {
     case MeterType.Cold => "cold"
