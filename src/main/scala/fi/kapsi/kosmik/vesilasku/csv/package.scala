@@ -6,8 +6,6 @@ import scala.io.Source
 
 package object csv {
 
-  import Csv.{assertColNames, splitRow}
-
   def fromFile(path: String, requiredColNames: List[String], separator: Char): Csv = {
     val file = new File(path)
     if (!(file.exists() && file.canRead)) {
@@ -45,37 +43,13 @@ package object csv {
       .mkString(newline)
   }
 
-  class MissingColumnException(val colName: String) extends Exception(s"Missing column: $colName")
-
-  class Row(private val header: List[String], private val rawRow: List[String]) {
-    def col(name: String): String = {
-      val index = header.indexOf(name)
-      if (index < 0) {
-        throw new IllegalArgumentException(f"no such column exists: $name")
+  private def assertColNames(requiredColNames: List[String], header: List[String]): Unit = {
+    requiredColNames.foreach(colName => {
+      if (!header.contains(colName)) {
+        throw new MissingColumnException(colName)
       }
-
-      rawRow(index)
-    }
+    })
   }
 
-  class Csv(val header: List[String], val rawRows: List[List[String]]) {
-    def rows(): Stream[Row] = rowsStream(header, rawRows)
-
-    private def rowsStream(header: List[String], rows: List[List[String]]): scala.Stream[Row] =
-      if (rows.isEmpty) Stream.empty
-      else new Row(header, rows.head) #:: rowsStream(header, rows.tail)
-  }
-
-  private object Csv {
-    def assertColNames(requiredColNames: List[String], header: List[String]): Unit = {
-      requiredColNames.foreach(colName => {
-        if (!header.contains(colName)) {
-          throw new MissingColumnException(colName)
-        }
-      })
-    }
-
-    def splitRow(row: String, separator: Char): List[String] = row.split(separator).map(_.trim).toList
-  }
-
+  private def splitRow(row: String, separator: Char): List[String] = row.split(separator).map(_.trim).toList
 }

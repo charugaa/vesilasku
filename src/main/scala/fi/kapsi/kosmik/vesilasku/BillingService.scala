@@ -4,8 +4,9 @@ import java.time.temporal.ChronoUnit
 import java.time.{LocalDate, YearMonth}
 
 import fi.kapsi.kosmik.vesilasku.MeterData.Row
-import fi.kapsi.kosmik.vesilasku.MeterType.MeterType
 import fi.kapsi.kosmik.vesilasku.csv.CsvProducer
+import fi.kapsi.kosmik.vesilasku.model.MeterType.MeterType
+import fi.kapsi.kosmik.vesilasku.model.{Apartment, Meter, MeterType}
 
 import scala.annotation.tailrec
 

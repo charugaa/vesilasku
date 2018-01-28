@@ -3,6 +3,7 @@ package fi.kapsi.kosmik.vesilasku
 import java.time.{Month, YearMonth}
 
 import fi.kapsi.kosmik.vesilasku.csv.toCsv
+import fi.kapsi.kosmik.vesilasku.model.{Apartment, Meter, MeterType}
 import fi.kapsi.kosmik.vesilasku.test.TestResource
 import org.scalatest.{FlatSpec, Matchers}
 
