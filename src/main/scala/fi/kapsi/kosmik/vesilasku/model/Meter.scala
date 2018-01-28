@@ -33,6 +33,6 @@ object Meter {
 
 object MeterType extends Enumeration {
   type MeterType = Value
-  val Cold: Value = Value("KV")
-  val Hot: Value = Value("LV")
+  val Cold: Value = Value("cold")
+  val Hot: Value = Value("hot")
 }

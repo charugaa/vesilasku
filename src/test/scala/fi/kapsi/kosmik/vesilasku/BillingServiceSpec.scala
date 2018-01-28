@@ -87,19 +87,7 @@ class BillingServiceSpec extends FlatSpec with Matchers with TestResource {
   }
 
   it should "produce report" in {
-    val apartments = List[Apartment](
-      Apartment("31", List(
-        Meter("As 31 KV", MeterType.Cold, "1010"),
-        Meter("As 31 LV", MeterType.Hot, "1011"))),
-      Apartment("32", List(
-        Meter("As 32.1 KV", MeterType.Cold, "1020"),
-        Meter("As 32.1 LV", MeterType.Hot, "1021"),
-        Meter("As 32.2 KV", MeterType.Cold, "1022"),
-        Meter("As 32.2 LV", MeterType.Hot, "1023"))),
-      Apartment("33", List(
-        Meter("As 33 KV", MeterType.Cold, "1030"),
-        Meter("As 33 LV", MeterType.Hot, "1031")))
-    )
+    val apartments = Apartments.fromFile(getClass.getResource("apartments-01.csv").getPath)
     val csv = MeterData.fromFile(getClass.getResource("DevicesValues646_3001_2017-07-03-581.rlv").getPath)
     val report = BillingService.report(apartments, csv, YearMonth.of(2017, Month.JUNE), MonthCount(6),
       WaterHeatingEnergy(58))
