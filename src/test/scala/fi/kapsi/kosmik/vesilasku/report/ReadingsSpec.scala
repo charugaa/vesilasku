@@ -1,16 +1,17 @@
-package fi.kapsi.kosmik.vesilasku
+package fi.kapsi.kosmik.vesilasku.report
 
 import java.time.{Month, YearMonth}
 
-import fi.kapsi.kosmik.vesilasku.csv.toCsv
+import fi.kapsi.kosmik.vesilasku.MeterData
 import fi.kapsi.kosmik.vesilasku.model._
+import fi.kapsi.kosmik.vesilasku.report.Readings._
 import fi.kapsi.kosmik.vesilasku.test.TestResource
 import org.scalatest.{FlatSpec, Matchers}
 
-class BillingServiceSpec extends FlatSpec with Matchers with TestResource {
-  val readingTolerance = 0.001
+class ReadingsSpec extends FlatSpec with Matchers with TestResource {
+  private val readingTolerance = 0.001
 
-  behavior of "The BillingService object"
+  behavior of "The Readings object"
 
   it should "calculate monthly readings" in {
     val hotMeter = Meter(MeterType.Hot, "1001")
@@ -19,7 +20,7 @@ class BillingServiceSpec extends FlatSpec with Matchers with TestResource {
 
     val csv = MeterData.fromFile(getClass.getResource("DevicesValues646_2001_2017-07-01-581.rlv").getPath)
 
-    val readings = BillingService.monthlyReadings(apartment, csv, YearMonth.of(2017, Month.JUNE), MonthCount(6))
+    val readings = monthlyReadings(apartment, csv, YearMonth.of(2017, Month.JUNE), MonthCount(6))
 
     val expectedMeters = Map(
       hotMeter -> List(
@@ -48,7 +49,7 @@ class BillingServiceSpec extends FlatSpec with Matchers with TestResource {
 
     val csv = MeterData.fromFile(getClass.getResource("DevicesValues646_4001_2017-08-01-581.rlv").getPath)
 
-    val readings = BillingService.monthlyReadings(apartment, csv, YearMonth.of(2017, Month.MAY), MonthCount(2))
+    val readings = monthlyReadings(apartment, csv, YearMonth.of(2017, Month.MAY), MonthCount(2))
 
     val expectedMeters = Map(
       coldMeter -> List(
@@ -70,7 +71,7 @@ class BillingServiceSpec extends FlatSpec with Matchers with TestResource {
     val csv = MeterData.fromFile(getClass.getResource("DevicesValues646_4001_2017-08-01-581.rlv").getPath)
 
     assertThrows[IllegalArgumentException] {
-      BillingService.monthlyReadings(apartment, csv, YearMonth.of(2017, Month.DECEMBER), MonthCount(2))
+      monthlyReadings(apartment, csv, YearMonth.of(2017, Month.DECEMBER), MonthCount(2))
     }
   }
 
@@ -82,17 +83,8 @@ class BillingServiceSpec extends FlatSpec with Matchers with TestResource {
     val csv = MeterData.fromFile(getClass.getResource("DevicesValues646_4001_2017-08-01-581.rlv").getPath)
 
     assertThrows[IllegalArgumentException] {
-      BillingService.monthlyReadings(apartment, csv, YearMonth.of(2015, Month.DECEMBER), MonthCount(2))
+      monthlyReadings(apartment, csv, YearMonth.of(2015, Month.DECEMBER), MonthCount(2))
     }
-  }
-
-  it should "produce report" in {
-    val apartments = Apartments.fromFile(getClass.getResource("apartments-01.csv").getPath)
-    val csv = MeterData.fromFile(getClass.getResource("DevicesValues646_3001_2017-07-03-581.rlv").getPath)
-    val report = BillingService.report(apartments, csv, YearMonth.of(2017, Month.JUNE), MonthCount(6),
-      WaterHeatingEnergy(58))
-
-    toCsv(report.producer()) shouldEqual testFile("expected-report-01.csv")
   }
 
   def assertMeterReadingsMatch(actual: Map[Meter, List[Reading]], expected: Map[Meter, List[Reading]]): Unit = {
