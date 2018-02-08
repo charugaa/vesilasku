@@ -13,12 +13,12 @@ class ReadingsSpec extends FlatSpec with Matchers with TestResource {
 
   behavior of "The Readings object"
 
-  it should "calculate monthly readings" in {
+  it should "calculate monthly readings in normal case" in {
     val hotMeter = Meter(MeterType.Hot, "1001")
     val coldMeter = Meter(MeterType.Cold, "1002")
     val apartment = Apartment("42", List(hotMeter, coldMeter))
 
-    val csv = MeterData.fromFile(getClass.getResource("DevicesValues646_2001_2017-07-01-581.rlv").getPath)
+    val csv = MeterData.fromFile(getClass.getResource("device-values-for-readings-normal-case.rlv").getPath)
 
     val readings = monthlyReadings(apartment, csv, YearMonth.of(2017, Month.JUNE), MonthCount(6))
 
@@ -47,7 +47,7 @@ class ReadingsSpec extends FlatSpec with Matchers with TestResource {
     val hotMeter = Meter(MeterType.Hot, "1021")
     val apartment = Apartment("42", List(hotMeter, coldMeter))
 
-    val csv = MeterData.fromFile(getClass.getResource("DevicesValues646_4001_2017-08-01-581.rlv").getPath)
+    val csv = MeterData.fromFile(getClass.getResource("device-values-for-readings-special-dates.rlv").getPath)
 
     val readings = monthlyReadings(apartment, csv, YearMonth.of(2017, Month.MAY), MonthCount(2))
 
@@ -68,7 +68,7 @@ class ReadingsSpec extends FlatSpec with Matchers with TestResource {
     val hotMeter = Meter(MeterType.Hot, "1021")
     val apartment = Apartment("42", List(hotMeter, coldMeter))
 
-    val csv = MeterData.fromFile(getClass.getResource("DevicesValues646_4001_2017-08-01-581.rlv").getPath)
+    val csv = MeterData.fromFile(getClass.getResource("device-values-for-readings-special-dates.rlv").getPath)
 
     assertThrows[IllegalArgumentException] {
       monthlyReadings(apartment, csv, YearMonth.of(2017, Month.DECEMBER), MonthCount(2))
@@ -80,7 +80,7 @@ class ReadingsSpec extends FlatSpec with Matchers with TestResource {
     val hotMeter = Meter(MeterType.Hot, "1021")
     val apartment = Apartment("42", List(hotMeter, coldMeter))
 
-    val csv = MeterData.fromFile(getClass.getResource("DevicesValues646_4001_2017-08-01-581.rlv").getPath)
+    val csv = MeterData.fromFile(getClass.getResource("device-values-for-readings-special-dates.rlv").getPath)
 
     assertThrows[IllegalArgumentException] {
       monthlyReadings(apartment, csv, YearMonth.of(2015, Month.DECEMBER), MonthCount(2))

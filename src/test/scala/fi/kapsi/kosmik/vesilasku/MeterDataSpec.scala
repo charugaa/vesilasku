@@ -10,7 +10,7 @@ class MeterDataSpec extends FlatSpec with Matchers {
   behavior of "The MeterData object"
 
   it should "parse different meter data types" in {
-    val csv = MeterData.fromFile(getClass.getResource("DevicesValues646_2001_2017-07-01-581.rlv").getPath)
+    val csv = MeterData.fromFile(getClass.getResource("device-values-for-parsing.rlv").getPath)
     val firstRow = csv.rows().head
 
     firstRow.endOfMonthReading(1).reading shouldEqual 56.398 +- readingTolerance
