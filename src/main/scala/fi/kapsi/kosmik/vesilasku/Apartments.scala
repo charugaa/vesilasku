@@ -9,19 +9,20 @@ import scala.annotation.tailrec
 object Apartments {
   def fromFile(path: String): List[Apartment] = {
     val csv = new ApartmentCsv(fromCsvFile(path, ApartmentCsv.colNames, ';'))
-    val apartmentRows = csv.rows().map(row => (row.apartment(), row.meterLabel(), row.meterId(), row.meterType()))
-      .groupBy({ case (apartmentLabel, _, _, _) => apartmentLabel })
+    val apartmentRowsByApartment = csv.rows()
+      .map(row => (row.apartment(), Meter(row.meterLabel(), row.meterType(), row.meterId())))
+      .groupBy(ar => ar._1)
       .toList
-    buildApartments(List(), apartmentRows)
+    buildApartments(List(), apartmentRowsByApartment)
   }
 
   @tailrec
   def buildApartments(acc: List[Apartment],
-                      rem: List[(String, Stream[(String, String, String, MeterType)])]): List[Apartment] = {
+                      rem: List[(String, Stream[(String, Meter)])]): List[Apartment] = {
     if (rem.isEmpty) acc
     else {
       val meters = rem.head._2.toList
-        .map({ case (_, meterLabel, meterId, meterType) => Meter(meterLabel, meterType, meterId) })
+        .map(ar => ar._2)
       val apartment = Apartment(rem.head._1, meters)
       buildApartments(apartment :: acc, rem.tail)
     }
