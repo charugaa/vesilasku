@@ -13,7 +13,15 @@ flow metering data. Currently, the application:
    ([example](src/test/resources/fi/kapsi/kosmik/vesilasku/report/expected-report.csv))
 
 
-## Running Tests
+## Building
+
+To build the whole thing into a self-contained jar file:
+
+```
+sbt assembly
+```
+
+To just run tests:
 
 ```
 sbt test
