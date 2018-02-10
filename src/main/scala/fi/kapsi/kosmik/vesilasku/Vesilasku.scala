@@ -12,7 +12,7 @@ object Vesilasku extends App {
     case Some(config) =>
       val apartments = Apartments.fromFile(config.apartmentCsvPath)
       val csv = MeterData.fromFile(config.deviceValuesCsv)
-      val report = Report.forMonths(apartments, csv, YearMonth.of(config.year, Month.JUNE),
+      val report = Report.forMonths(apartments, csv, YearMonth.of(config.year, config.month),
         config.months, config.waterHeatingEnergy)
       println(toCsv(report.producer()))
 
