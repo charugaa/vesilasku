@@ -35,7 +35,7 @@ object ConfigParsing {
                     year: Int = -1,
                     month: Int = -1)
 
-  val parser: scopt.OptionParser[Config] = new scopt.OptionParser[Config]("scopt") {
+  val parser: scopt.OptionParser[Config] = new scopt.OptionParser[Config]("vesilasku") {
     head("vesilasku", "0.1")
 
     opt[Int]('c', "months")
