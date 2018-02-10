@@ -23,11 +23,11 @@ java -jar target/scala-2.12/vesilasku-assembly-0.1.0-SNAPSHOT.jar --help
 To actually produce a report, you could do, for example:
 ```
 java -jar target/scala-2.12/vesilasku-assembly-0.1.0-SNAPSHOT.jar \
-  -a <apartment meters csv> \
-  -d <sontex devices values csv (rlv)> \
-  -c 3 \       # number of months in report
-  -m 2017-06 \ # last month in report
-  -w 58        # kilowatt hours per cubic meter of hot water
+  --apartment-csv <path> \
+  --device-values-csv <path> \
+  --from-month 2017-06 \
+  --months 3 \ 
+  --water-heating-energy 58  # kilowatt hours per cubic meter of hot water
 ```
 
 ## Building
